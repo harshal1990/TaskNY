@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="activity"
+            type="com.harshal.tasknyt.controller.BookListScreen" />
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000">
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/booksViewPager"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" />
+
+        <com.harshal.tasknyt.Util.circularpageindicator.CirclePageIndicator
+            android:id="@+id/viewPagerIndicator"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="center"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:nestedScrollingEnabled="false"
+            android:padding="10dip"
+            card_view:fillColor="@color/colorAccent"
+            card_view:pageColor="#00B5B6B8"
+            card_view:radius1="5dp"
+            card_view:snap="true"
+            card_view:strokeColor="@color/colorAccent"
+            card_view:strokeWidth="2dp" />
+
+    </RelativeLayout>
+
+</layout>
