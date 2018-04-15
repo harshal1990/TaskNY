@@ -19,6 +19,7 @@ import com.harshal.tasknyt.Interfaces.RetrofitObjectAPI;
 import com.harshal.tasknyt.Model.Books;
 import com.harshal.tasknyt.Model.Lists;
 import com.harshal.tasknyt.Model.MainBookModel;
+import com.harshal.tasknyt.Model.Results;
 import com.harshal.tasknyt.R;
 import com.harshal.tasknyt.Util.CommonCode;
 import com.harshal.tasknyt.Util.CommonIOManager;
@@ -27,6 +28,8 @@ import com.harshal.tasknyt.Util.ImageLoader;
 import com.harshal.tasknyt.Util.Logger;
 import com.harshal.tasknyt.Util.RecyclerItemClickListener;
 import com.harshal.tasknyt.databinding.ActivityMainBinding;
+import com.harshal.tasknyt.services.ApiCallService;
+import com.harshal.tasknyt.services.ApiCallback;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +39,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class HomeScreen extends AppCompatActivity {
+public class HomeScreen extends AppCompatActivity implements ApiCallback.Listener<Results> {
     private Boolean exit = false;
     private ActivityMainBinding activityMainBinding;
     private HashMap<Integer,ArrayList<Books>> bookMap = new HashMap<>();
@@ -51,7 +54,12 @@ public class HomeScreen extends AppCompatActivity {
 
         pd = new ProgressDialog(this);
 
-        getData();
+        ApiCallback apiCallback = new ApiCallback(new Handler());
+        apiCallback.setListener(this);
+
+        Intent intent = new Intent(this, ApiCallService.class);
+        intent.putExtra("receiver",apiCallback);
+        startService(intent);
 
         activityMainBinding.booksRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
@@ -64,56 +72,6 @@ public class HomeScreen extends AppCompatActivity {
         }));
     }
 
-    void getData()
-    {
-        if(CommonCode.getInstance(this).checkInternet())
-        {
-            pd.setMessage("Loading....");
-            pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            pd.setIndeterminate(true);
-            pd.show();
-
-            RetrofitObjectAPI service = CommonIOManager.getRetrofitManager().create(RetrofitObjectAPI.class);
-
-            Call<MainBookModel> call = service.getBooksDetails("7745fc0778b44a61bc7287765ca7aed0");
-
-            call.enqueue(new Callback<MainBookModel>() {
-
-                @Override
-                public void onResponse(Call<MainBookModel> call, Response<MainBookModel> response) {
-                    pd.dismiss();
-                    try {
-                        listData = new ArrayList<>();
-                        listData = response.body().results.getLists();
-                        for (Lists lists:response.body().results.getLists())
-                        {
-                            ArrayList<Books> bookData = new ArrayList<>();
-                            bookData.addAll(lists.getBooks());
-                            bookMap.put(lists.getList_id(),bookData);
-                        }
-                        setAdapter();
-
-                    } catch (Exception e) {
-                        Logger.getInstance().Log("Error Occured");
-                        CommonCode.getInstance(HomeScreen.this).showToastMessage("Some Error Occured");
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<MainBookModel> call, Throwable t) {
-                    pd.dismiss();
-                    Logger.getInstance().Log("Api Call Failure");
-                    CommonCode.getInstance(HomeScreen.this).showToastMessage("Api Call Failure");
-                }
-            });
-        }
-        else
-        {
-            CommonCode.getInstance(this).showToastMessage(R.string.no_internet_connection);
-        }
-    }
-
     private void setAdapter()
     {
         BookAdapter bookAdapter = new BookAdapter();
@@ -123,6 +81,47 @@ public class HomeScreen extends AppCompatActivity {
         activityMainBinding.booksRecyclerView.setHasFixedSize(true);
         activityMainBinding.booksRecyclerView.setItemAnimator(new DefaultItemAnimator());
         activityMainBinding.booksRecyclerView.setAdapter(bookAdapter);
+    }
+
+    @Override
+    public void showProgressDialog() {
+        pd.setMessage("Loading....");
+        pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        pd.setIndeterminate(true);
+        pd.show();
+    }
+
+    @Override
+    public void dismissProgressDialog() {
+        if(pd.isShowing())
+        {
+            pd.dismiss();
+        }
+    }
+
+    @Override
+    public void onSuccess(Results data) {
+        try {
+            listData = new ArrayList<>();
+            listData = data.getLists();
+            for (Lists lists:data.getLists())
+            {
+                ArrayList<Books> bookData = new ArrayList<>();
+                bookData.addAll(lists.getBooks());
+                bookMap.put(lists.getList_id(),bookData);
+            }
+            setAdapter();
+
+        } catch (Exception e) {
+            Logger.getInstance().Log("Error Occured");
+            CommonCode.getInstance(HomeScreen.this).showToastMessage("Some Error Occured");
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onFailure() {
+        Logger.getInstance().Log("Api Call Failure");
     }
 
     private class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder>

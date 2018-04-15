@@ -2,6 +2,7 @@ package com.harshal.tasknyt.Interfaces;
 
 import com.harshal.tasknyt.Model.MainBookModel;
 
+import io.reactivex.Observable;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
@@ -12,5 +13,8 @@ import retrofit2.http.Query;
 
 public interface RetrofitObjectAPI {
     @GET("lists/overview.json")
-    Call<MainBookModel> getBooksDetails(@Query("api-key") String api_key);
+    Observable<MainBookModel> getBooksDetailsObservable(@Query("api-key") String api_key);
+
+    @GET("lists/overview.json")
+    Call<MainBookModel> getBooksDetailsRetrofit(@Query("api-key") String api_key);
 }

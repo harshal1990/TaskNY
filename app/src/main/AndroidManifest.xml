@@ -27,6 +27,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".controller.BookListScreen"></activity>
+        <service android:name=".services.ApiCallService"
+            android:exported="false"/>
     </application>
 
 </manifest>

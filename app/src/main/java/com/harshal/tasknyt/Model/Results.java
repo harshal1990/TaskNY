@@ -1,12 +1,13 @@
 package com.harshal.tasknyt.Model;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by Harshal on 07-Apr-18.
  */
 
-public class Results {
+public class Results implements Serializable {
     public String bestsellers_date;
     public String published_date;
     public String published_date_description;
